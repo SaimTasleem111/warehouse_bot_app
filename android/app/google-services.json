@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "12034622788",
+    "project_id": "warehouse-bot-2087a",
+    "storage_bucket": "warehouse-bot-2087a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:12034622788:android:c1916c931e92ed55628311",
+        "android_client_info": {
+          "package_name": "com.example.warehousebot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjnv0_kvAWL27ZUryRLE8OI5kRbG7BIEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
