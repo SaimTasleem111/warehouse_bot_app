@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../api_client.dart';
 import '../../helperFunction/tokenStorage.dart';
 import '../../widgets/app_theme.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/custom_card.dart';
-import '../../widgets/section_title.dart';
 import '../../widgets/empty_state.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -87,21 +87,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context), // 👈 UPDATED
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: AppTheme.surface(context), // 👈 UPDATED
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary(context)), // 👈 UPDATED
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Notifications',
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: const GradientText( // 👈 UPDATED to use gradient
+          text: 'Notifications',
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
       ),
       body: loading
@@ -110,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             )
           : RefreshIndicator(
               color: AppTheme.primary,
-              backgroundColor: AppTheme.surface,
+              backgroundColor: AppTheme.surface(context), // 👈 UPDATED
               onRefresh: fetchNotifications,
               child: notifications.isEmpty
                   ? const SingleChildScrollView(
@@ -164,8 +161,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle( // 👈 UPDATED
+                    color: AppTheme.textPrimary(context),
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -173,8 +170,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const SizedBox(height: 6),
                 Text(
                   body,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle( // 👈 UPDATED
+                    color: AppTheme.textSecondary(context),
                     fontSize: 14,
                     height: 1.4,
                   ),
@@ -182,16 +179,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(
+                    Icon( // 👈 UPDATED
                       Icons.access_time,
                       size: 14,
-                      color: AppTheme.textTertiary,
+                      color: AppTheme.textTertiary(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       "Just now",
-                      style: const TextStyle(
-                        color: AppTheme.textTertiary,
+                      style: TextStyle( // 👈 UPDATED
+                        color: AppTheme.textTertiary(context),
                         fontSize: 12,
                       ),
                     ),

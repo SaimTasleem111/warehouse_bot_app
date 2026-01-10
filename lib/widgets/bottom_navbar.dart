@@ -1,3 +1,6 @@
+// ============================================
+// lib/widgets/bottom_navbar.dart - UPDATED
+// ============================================
 import 'package:flutter/material.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/inventory/inventoryScreen.dart';
@@ -44,16 +47,18 @@ class _BottomNavState extends State<BottomNav> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: AppTheme.surface(context), // 👈 UPDATED
           border: Border(
             top: BorderSide(
-              color: AppTheme.borderColor,
+              color: AppTheme.borderColor(context), // 👈 UPDATED
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Theme.of(context).brightness == Brightness.dark // 👈 UPDATED
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -82,7 +87,7 @@ class _BottomNavState extends State<BottomNav> {
     final isSelected = _currentIndex == index;
     
     Color getIconColor() {
-      if (!isSelected) return AppTheme.textTertiary;
+      if (!isSelected) return AppTheme.textTertiary(context); // 👈 UPDATED
       switch (index) {
         case 0: return AppTheme.primary;
         case 1: return AppTheme.warning;
@@ -123,7 +128,7 @@ class _BottomNavState extends State<BottomNav> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? getIconColor() : AppTheme.textTertiary,
+                  color: isSelected ? getIconColor() : AppTheme.textTertiary(context), // 👈 UPDATED
                 ),
               ),
             ],

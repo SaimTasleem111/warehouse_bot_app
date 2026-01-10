@@ -19,30 +19,58 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool loading = false;
-  bool badCreds = false;
+  bool obscurePassword = true;
+  String? errorMessage;
+  String? emailError;
+  String? passwordError;
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
 
   Future<void> loginUser() async {
+    // Clear previous errors
     setState(() {
-      loading = true;
-      badCreds = false;
+      errorMessage = null;
+      emailError = null;
+      passwordError = null;
     });
+
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    // Validate email
+    if (email.isEmpty) {
+      setState(() => emailError = "Email required");
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      setState(() => emailError = "Invalid email");
+      return;
+    }
+
+    // Validate password
+    if (password.isEmpty) {
+      setState(() => passwordError = "Password required");
+      return;
+    }
+
+    setState(() => loading = true);
 
     try {
       final res = await ApiClient.post("/auth/login", {
-        "email": emailController.text.trim(),
-        "password": passwordController.text.trim(),
+        "email": email,
+        "password": password,
       });
 
       if (res["success"] == true && res["token"] != null) {
-        // Save all user data including userId
         await TokenStorage.saveUserData(
           token: res["token"],
-          userId: res["userId"] ?? res["user"]?["_id"] ?? "", // Handle different response formats
-          email: emailController.text.trim(),
-          name: res["name"] ?? res["user"]?["name"] ?? "", // If backend returns name
+          userId: res["userId"] ?? res["user"]?["_id"] ?? "",
+          email: email,
+          name: res["name"] ?? res["user"]?["name"] ?? "",
         );
 
-        // Optional: Send FCM token to backend for device-specific notifications
         try {
           final userId = res["userId"] ?? res["user"]?["_id"];
           if (userId != null && userId.isNotEmpty) {
@@ -53,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         } catch (e) {
           print("⚠️ FCM token upload failed: $e");
-          // Don't block login if this fails
         }
 
         if (!mounted) return;
@@ -66,11 +93,27 @@ class _LoginScreenState extends State<LoginScreen> {
           (_) => false,
         );
       } else {
-        setState(() => badCreds = true);
+        setState(() => errorMessage = "Wrong email or password");
       }
     } catch (e) {
       print("❌ Login error: $e");
-      setState(() => badCreds = true);
+      String errorString = e.toString().toLowerCase();
+      
+      if (errorString.contains('socket') || 
+          errorString.contains('network') || 
+          errorString.contains('connection') ||
+          errorString.contains('timeout')) {
+        setState(() => errorMessage = "Connection error. Check your internet.");
+      } else if (errorString.contains('user not found') || 
+                 errorString.contains('no user')) {
+        setState(() => errorMessage = "User not found");
+      } else if (errorString.contains('401') || 
+                 errorString.contains('unauthorized') ||
+                 errorString.contains('invalid credentials')) {
+        setState(() => errorMessage = "Wrong email or password");
+      } else {
+        setState(() => errorMessage = "Internal server error");
+      }
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -88,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -101,60 +144,86 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontWeight: FontWeight.bold,
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 "Intelligent Warehouse Management",
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.textSecondary(context),
                 ),
               ),
               const SizedBox(height: 48),
 
               CustomCard(
                 padding: const EdgeInsets.all(28),
-                backgroundColor: AppTheme.surface,
-                borderColor: AppTheme.borderLight,
+                backgroundColor: AppTheme.surface(context),
+                borderColor: AppTheme.borderLight(context),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
+                    Text(
                       "Sign In",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: AppTheme.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    /// EMAIL
+                    // Email Field
                     TextField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: AppTheme.textPrimary(context)),
                       decoration: _inputDecoration(
+                        context: context,
                         label: "Email",
                         icon: Icons.email_outlined,
+                        errorText: emailError,
                       ),
+                      onChanged: (_) {
+                        if (emailError != null) {
+                          setState(() => emailError = null);
+                        }
+                      },
                     ),
 
                     const SizedBox(height: 16),
 
-                    /// PASSWORD
+                    // Password Field
                     TextField(
                       controller: passwordController,
-                      obscureText: true,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      obscureText: obscurePassword,
+                      style: TextStyle(color: AppTheme.textPrimary(context)),
                       decoration: _inputDecoration(
+                        context: context,
                         label: "Password",
                         icon: Icons.lock_outline,
+                        errorText: passwordError,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: AppTheme.textSecondary(context),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscurePassword = !obscurePassword;
+                            });
+                          },
+                        ),
                       ),
+                      onChanged: (_) {
+                        if (passwordError != null) {
+                          setState(() => passwordError = null);
+                        }
+                      },
                       onSubmitted: (_) => loading ? null : loginUser(),
                     ),
 
                     const SizedBox(height: 12),
 
-                    /// FORGOT PASSWORD (CLICKABLE)
                     Align(
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
@@ -178,14 +247,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    if (badCreds) ...[
+                    if (errorMessage != null) ...[
                       const SizedBox(height: 12),
-                      _errorBox(),
+                      _errorBox(context, errorMessage!),
                     ],
 
                     const SizedBox(height: 24),
 
-                    /// LOGIN BUTTON
                     ElevatedButton(
                       onPressed: loading ? null : loginUser,
                       style: ElevatedButton.styleFrom(
@@ -226,33 +294,47 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// INPUT DECORATION
   InputDecoration _inputDecoration({
+    required BuildContext context,
     required String label,
     required IconData icon,
+    String? errorText,
+    Widget? suffixIcon,
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppTheme.textSecondary),
-      prefixIcon: Icon(icon, color: AppTheme.textSecondary),
+      labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
+      prefixIcon: Icon(icon, color: AppTheme.textSecondary(context)),
+      suffixIcon: suffixIcon,
+      errorText: errorText,
+      errorStyle: const TextStyle(color: AppTheme.error),
       filled: true,
-      fillColor: AppTheme.background,
+      fillColor: AppTheme.background(context),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.borderColor),
+        borderSide: BorderSide(
+          color: errorText != null ? AppTheme.error : AppTheme.borderColor(context),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: AppTheme.primary,
+        borderSide: BorderSide(
+          color: errorText != null ? AppTheme.error : AppTheme.primary,
           width: 2,
         ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppTheme.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppTheme.error, width: 2),
       ),
     );
   }
 
-  /// ERROR BOX
-  Widget _errorBox() {
+  Widget _errorBox(BuildContext context, String message) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -261,13 +343,13 @@ class _LoginScreenState extends State<LoginScreen> {
         border: Border.all(color: AppTheme.error.withOpacity(0.3)),
       ),
       child: Row(
-        children: const [
-          Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-          SizedBox(width: 8),
+        children: [
+          const Icon(Icons.error_outline, color: AppTheme.error, size: 20),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              "Invalid credentials. Please try again.",
-              style: TextStyle(
+              message,
+              style: const TextStyle(
                 color: AppTheme.error,
                 fontSize: 13,
               ),

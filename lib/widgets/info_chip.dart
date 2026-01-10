@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class InfoChip extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -16,22 +15,24 @@ class InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chipColor = color ?? AppTheme.textSecondary(context); // 👈 UPDATED
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
+        color: AppTheme.surfaceLight(context), // 👈 UPDATED
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.borderColor),
+        border: Border.all(color: AppTheme.borderColor(context)), // 👈 UPDATED
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color ?? AppTheme.textSecondary),
+          Icon(icon, size: 14, color: chipColor),
           const SizedBox(width: 6),
           Text(
             text,
             style: TextStyle(
-              color: color ?? AppTheme.textSecondary,
+              color: chipColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

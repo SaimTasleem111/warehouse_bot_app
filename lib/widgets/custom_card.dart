@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class CustomCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -32,13 +31,21 @@ class CustomCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(16),
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.surface,
+        color: backgroundColor ?? AppTheme.surface(context), // 👈 UPDATED
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: borderColor ?? AppTheme.borderColor,
+          color: borderColor ?? AppTheme.borderColor(context), // 👈 UPDATED
           width: borderWidth,
         ),
-        boxShadow: boxShadow,
+        boxShadow: boxShadow ?? [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: child,
     );

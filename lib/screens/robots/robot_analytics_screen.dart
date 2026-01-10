@@ -3,10 +3,12 @@ import '../../api_client.dart';
 import '../../helperFunction/tokenStorage.dart';
 import 'robot_detail_analytics_screen.dart';
 import '../../widgets/app_theme.dart';
-import '../../widgets/page_header.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/settings_bottom_sheet.dart';
+import '../auth/login_screen.dart';
 
 class RobotAnalyticsScreen extends StatefulWidget {
   const RobotAnalyticsScreen({super.key});
@@ -19,7 +21,7 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
   bool loading = true;
   List robots = [];
 
-  fetchRobots() async {
+  Future<void> fetchRobots() async {
     setState(() => loading = true);
     try {
       final token = await TokenStorage.getToken() ?? "";
@@ -37,6 +39,46 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text("Logout", style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.bold)),
+        content: Text("Are you sure you want to logout?", style: TextStyle(color: AppTheme.textSecondary(context))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancel", style: TextStyle(color: AppTheme.textSecondary(context))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await TokenStorage.clearToken();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+        (_) => false,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +88,24 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context),
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface(context),
+        elevation: 0,
+        title: const GradientText(text: "Robot Analytics", fontSize: 20, fontWeight: FontWeight.bold),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: AppTheme.textPrimary(context)),
+            tooltip: "Settings",
+            onPressed: () => SettingsBottomSheet.show(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppTheme.error),
+            tooltip: "Logout",
+            onPressed: _handleLogout,
+          ),
+        ],
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : SafeArea(
@@ -55,9 +114,9 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const PageHeader(
-                      title: "Robot Analytics",
-                      subtitle: "Monitor fleet performance and health",
+                    Text(
+                      "Monitor fleet performance and health",
+                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary(context)),
                     ),
                     const SizedBox(height: 20),
 
@@ -108,8 +167,10 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => RobotDetailAnalyticsScreen(robot: robot),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => RobotDetailAnalyticsScreen(robot: robot),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
         );
       },
@@ -149,10 +210,10 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
 
           Text(
             name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: AppTheme.textPrimary(context),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -160,7 +221,7 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
           const SizedBox(height: 4),
           Text(
             "ID: $robotId",
-            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary(context)),
           ),
 
           const SizedBox(height: 12),
@@ -214,7 +275,7 @@ class _RobotAnalyticsScreenState extends State<RobotAnalyticsScreen> {
       case "charging":
         return AppTheme.warning;
       default:
-        return AppTheme.textTertiary;
+        return AppTheme.textTertiary(context);
     }
   }
 }

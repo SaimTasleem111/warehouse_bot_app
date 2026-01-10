@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../../api_client.dart';
 import '../../helperFunction/tokenStorage.dart';
 import '../../widgets/app_theme.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/info_chip.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_indicator.dart';
+import '../../widgets/settings_bottom_sheet.dart';
+import '../auth/login_screen.dart';
 
 class JobTrackingScreen extends StatefulWidget {
   const JobTrackingScreen({super.key});
@@ -21,7 +24,6 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
   List allJobs = [];
   bool showPendingExpanded = true;
 
-  // Changed return type from void to Future<void>
   Future<void> fetchJobs() async {
     setState(() => loading = true);
 
@@ -38,6 +40,46 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
     } catch (e) {
       print("Jobs fetch error: $e");
       if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text("Logout", style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.bold)),
+        content: Text("Are you sure you want to logout?", style: TextStyle(color: AppTheme.textSecondary(context))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancel", style: TextStyle(color: AppTheme.textSecondary(context))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await TokenStorage.clearToken();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+        (_) => false,
+      );
     }
   }
 
@@ -60,25 +102,30 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: AppTheme.surface(context),
         elevation: 0,
-        title: const Text(
-          "Job Tracking",
-          style: TextStyle(
-            color: AppTheme.primary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        title: const GradientText(text: "Job Tracking", fontSize: 20, fontWeight: FontWeight.bold),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: AppTheme.textPrimary(context)),
+            tooltip: "Settings",
+            onPressed: () => SettingsBottomSheet.show(context),
           ),
-        ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppTheme.error),
+            tooltip: "Logout",
+            onPressed: _handleLogout,
+          ),
+        ],
       ),
       body: loading
           ? const LoadingIndicator(message: "Loading jobs...")
           : SafeArea(
               child: RefreshIndicator(
                 color: AppTheme.primary,
-                backgroundColor: AppTheme.surface,
+                backgroundColor: AppTheme.surface(context),
                 onRefresh: fetchJobs,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -136,10 +183,10 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         "Pending Jobs",
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.textPrimary(context),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -148,7 +195,7 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.warning.withValues(),
+                          color: AppTheme.warning.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -166,20 +213,20 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
                     showPendingExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.textSecondary(context),
                   ),
                 ],
               ),
             ),
           ),
           if (showPendingExpanded) ...[
-            const Divider(color: AppTheme.borderColor, height: 1),
+            Divider(color: AppTheme.borderColor(context), height: 1),
             if (pendingJobs.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Text(
                   "No pending jobs",
-                  style: TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.textSecondary(context)),
                 ),
               )
             else
@@ -201,8 +248,8 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppTheme.borderColor, width: 1)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppTheme.borderColor(context), width: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,8 +267,8 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
               const SizedBox(width: 8),
               Text(
                 "Job #$jobId",
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.textPrimary(context),
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -238,8 +285,8 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
               Expanded(
                 child: Text(
                   itemsDesc,
-                  style: const TextStyle(
-                    color: AppTheme.textTertiary,
+                  style: TextStyle(
+                    color: AppTheme.textTertiary(context),
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -282,8 +329,8 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
               Expanded(
                 child: Text(
                   "Job #$jobId",
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.textPrimary(context),
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -300,14 +347,14 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Progress",
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                    style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13),
                   ),
                   Text(
                     "$progress%",
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: TextStyle(
+                      color: AppTheme.textPrimary(context),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -320,7 +367,7 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
                 child: LinearProgressIndicator(
                   value: progress / 100,
                   minHeight: 8,
-                  backgroundColor: AppTheme.surfaceLight,
+                  backgroundColor: AppTheme.surfaceLight(context),
                   valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
                 ),
               ),
@@ -328,7 +375,7 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
           ),
 
           const SizedBox(height: 16),
-          const Divider(color: AppTheme.borderColor),
+          Divider(color: AppTheme.borderColor(context)),
           const SizedBox(height: 12),
 
           _jobDetailRow(Icons.precision_manufacturing, "Robot", robot),
@@ -348,17 +395,17 @@ class _JobTrackingScreenState extends State<JobTrackingScreen> {
   Widget _jobDetailRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: AppTheme.textTertiary, size: 16),
+        Icon(icon, color: AppTheme.textTertiary(context), size: 16),
         const SizedBox(width: 8),
         Text(
           "$label: ",
-          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          style: TextStyle(color: AppTheme.textSecondary(context), fontSize: 13),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: AppTheme.textPrimary(context),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),

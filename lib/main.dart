@@ -1,12 +1,17 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/notification_provider.dart';
+import 'widgets/app_theme.dart';
 import 'screens/splash/splash_screen.dart';
 
 // Background handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
+  print('📩 Background message: ${message.notification?.title}');
 }
 
 Future<void> main() async {
@@ -26,7 +31,15 @@ Future<void> main() async {
   
   print('✅ FCM Ready');
 
-  runApp(const WarehouseBotApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
+      child: const WarehouseBotApp(),
+    ),
+  );
 }
 
 class WarehouseBotApp extends StatelessWidget {
@@ -34,10 +47,17 @@ class WarehouseBotApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "WarehouseBot App",
-      debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: "WarehouseBot App",
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

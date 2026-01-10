@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class StatusBadge extends StatelessWidget {
   final String status;
   final Color? customColor;
@@ -14,7 +13,7 @@ class StatusBadge extends StatelessWidget {
     this.showDot = true,
   });
 
-  Color getStatusColor() {
+  Color getStatusColor(BuildContext context) { // 👈 UPDATED - added context parameter
     if (customColor != null) return customColor!;
     
     switch (status.toLowerCase()) {
@@ -39,13 +38,13 @@ class StatusBadge extends StatelessWidget {
       case "charging":
         return AppTheme.warning;
       default:
-        return AppTheme.textTertiary;
+        return AppTheme.textTertiary(context); // 👈 UPDATED
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = getStatusColor();
+    final color = getStatusColor(context); // 👈 UPDATED - pass context
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),

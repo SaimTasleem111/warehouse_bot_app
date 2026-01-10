@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class CustomSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
@@ -18,18 +17,18 @@ class CustomSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.surface(context), // 👈 UPDATED
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderColor),
+        border: Border.all(color: AppTheme.borderColor(context)), // 👈 UPDATED
       ),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: const TextStyle(color: AppTheme.textPrimary),
+        style: TextStyle(color: AppTheme.textPrimary(context)), // 👈 UPDATED
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: AppTheme.textTertiary),
-          prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary),
+          hintStyle: TextStyle(color: AppTheme.textTertiary(context)), // 👈 UPDATED
+          prefixIcon: Icon(Icons.search, color: AppTheme.textSecondary(context)), // 👈 UPDATED
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../helperFunction/tokenStorage.dart';
-import '../../../api_client.dart';
+import '../../api_client.dart';
 import '../robots/robot_details_screen.dart';
 import '../../widgets/app_theme.dart';
-import '../../widgets/page_header.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/status_badge.dart';
@@ -11,6 +11,8 @@ import '../../widgets/info_chip.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/loading_indicator.dart';
+import '../../widgets/settings_bottom_sheet.dart';
+import '../auth/login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,7 +29,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int completedOrders = 0;
   int inTransitOrders = 0;
 
-  // Changed return type from void to Future<void>
   Future<void> fetchData() async {
     setState(() => loading = true);
 
@@ -56,6 +57,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text("Logout", style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.bold)),
+        content: Text("Are you sure you want to logout?", style: TextStyle(color: AppTheme.textSecondary(context))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancel", style: TextStyle(color: AppTheme.textSecondary(context))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Logout", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await TokenStorage.clearToken();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+        (_) => false,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -65,12 +106,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context),
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface(context),
+        elevation: 0,
+        title: const GradientText(text: "Dashboard", fontSize: 20, fontWeight: FontWeight.bold),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: AppTheme.textPrimary(context)),
+            tooltip: "Settings",
+            onPressed: () => SettingsBottomSheet.show(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppTheme.error),
+            tooltip: "Logout",
+            onPressed: _handleLogout,
+          ),
+        ],
+      ),
       body: loading
           ? const LoadingIndicator(message: "Loading dashboard...")
           : RefreshIndicator(
               color: AppTheme.primary,
-              backgroundColor: AppTheme.surface,
+              backgroundColor: AppTheme.surface(context),
               onRefresh: fetchData,
               child: SafeArea(
                 child: SingleChildScrollView(
@@ -79,9 +137,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const PageHeader(
-                        title: "Dashboard",
-                        subtitle: "Real-time warehouse monitoring",
+                      Text(
+                        "Real-time warehouse monitoring",
+                        style: TextStyle(fontSize: 14, color: AppTheme.textSecondary(context)),
                       ),
                       const SizedBox(height: 20),
                       _quickStats(),
@@ -179,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             statusColor = AppTheme.primary;
             break;
           default:
-            statusColor = AppTheme.textTertiary;
+            statusColor = AppTheme.textTertiary(context);
         }
 
         return CustomCard(
@@ -195,8 +253,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => RobotDetailsScreen(robotId: robotId),
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => RobotDetailsScreen(robotId: robotId),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
               ),
             );
           },
@@ -218,8 +278,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: AppTheme.textPrimary(context),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -227,8 +287,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       model,
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary(context),
                         fontSize: 13,
                       ),
                     ),
@@ -252,8 +312,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 8),
                       Text(
                         "Job: $currentJob",
-                        style: const TextStyle(
-                          color: AppTheme.textTertiary,
+                        style: TextStyle(
+                          color: AppTheme.textTertiary(context),
                           fontSize: 11,
                         ),
                       ),
@@ -261,9 +321,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AppTheme.textTertiary,
+                color: AppTheme.textTertiary(context),
                 size: 20,
               ),
             ],

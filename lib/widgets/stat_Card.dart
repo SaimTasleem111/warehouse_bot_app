@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -25,7 +24,7 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isCompact ? 16 : 20),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.surface(context), // 👈 UPDATED
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: accentColor.withOpacity(0.2),
@@ -78,19 +77,19 @@ class StatCard extends StatelessWidget {
           SizedBox(height: isCompact ? 12 : 16),
           Text(
             value,
-            style: TextStyle(
+            style: TextStyle( // 👈 UPDATED
               fontSize: isCompact ? 28 : 36,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: AppTheme.textPrimary(context),
               height: 1,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             title,
-            style: TextStyle(
+            style: TextStyle( // 👈 UPDATED
               fontSize: isCompact ? 12 : 14,
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondary(context),
               fontWeight: FontWeight.w500,
             ),
             maxLines: 1,
@@ -100,9 +99,9 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle!,
-              style: const TextStyle(
+              style: TextStyle( // 👈 UPDATED
                 fontSize: 11,
-                color: AppTheme.textTertiary,
+                color: AppTheme.textTertiary(context),
               ),
             ),
           ],

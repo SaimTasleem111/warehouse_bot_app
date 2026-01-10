@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
@@ -25,13 +24,13 @@ class EmptyState extends StatelessWidget {
             Icon(
               icon,
               size: 64,
-              color: AppTheme.textTertiary.withOpacity(0.5),
+              color: AppTheme.textTertiary(context).withOpacity(0.5), // 👈 UPDATED
             ),
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle( // 👈 UPDATED
+                color: AppTheme.textSecondary(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -41,8 +40,8 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 submessage!,
-                style: const TextStyle(
-                  color: AppTheme.textTertiary,
+                style: TextStyle( // 👈 UPDATED
+                  color: AppTheme.textTertiary(context),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,

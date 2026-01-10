@@ -1,5 +1,9 @@
+// ============================================
+// lib/screens/orders/order_details_screen.dart - FIXED
+// ============================================
 import 'package:flutter/material.dart';
 import '../../widgets/app_theme.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/info_chip.dart';
@@ -16,21 +20,18 @@ class OrderDetailsScreen extends StatelessWidget {
     List items = order["items"] ?? [];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context),
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: AppTheme.surface(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary(context)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          "Order #$orderId",
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        title: GradientText(
+          text: "Order #$orderId",
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
       ),
       body: SafeArea(
@@ -46,13 +47,13 @@ class OrderDetailsScreen extends StatelessWidget {
                     Icon(
                       _getStatusIcon(status),
                       size: 48,
-                      color: _getStatusColor(status),
+                      color: _getStatusColor(status, context), // ✅ FIXED - Pass context
                     ),
                     const SizedBox(height: 12),
                     Text(
                       status.toUpperCase(),
                       style: TextStyle(
-                        color: _getStatusColor(status),
+                        color: _getStatusColor(status, context), // ✅ FIXED - Pass context
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
@@ -61,8 +62,8 @@ class OrderDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       "Order #$orderId",
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary(context),
                         fontSize: 14,
                       ),
                     ),
@@ -80,7 +81,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return _itemCard(item);
+                  return _itemCard(context, item);
                 },
               ),
             ],
@@ -90,7 +91,7 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _itemCard(item) {
+  Widget _itemCard(BuildContext context, item) {
     String name = item["name"]?.toString() ?? "Unknown Product";
     int quantity = item["quantity"] ?? 0;
     String category = item["category"]?.toString() ?? "N/A";
@@ -115,10 +116,10 @@ class OrderDetailsScreen extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -150,7 +151,7 @@ class OrderDetailsScreen extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, BuildContext context) { // ✅ FIXED - Added context parameter
     switch (status.toLowerCase()) {
       case "completed":
         return AppTheme.success;
@@ -159,7 +160,7 @@ class OrderDetailsScreen extends StatelessWidget {
       case "in transit":
         return AppTheme.primary;
       default:
-        return AppTheme.textTertiary;
+        return AppTheme.textTertiary(context); // ✅ Now works!
     }
   }
 }

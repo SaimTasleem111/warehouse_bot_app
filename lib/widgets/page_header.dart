@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'gradient_text.dart';
 import 'app_theme.dart';
 
-
 class PageHeader extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -37,9 +36,9 @@ class PageHeader extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: TextStyle( // 👈 UPDATED
               fontSize: 15,
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondary(context),
               fontWeight: FontWeight.w400,
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../api_client.dart';
 import '../../helperFunction/tokenStorage.dart';
 import '../../widgets/app_theme.dart';
+import '../../widgets/gradient_text.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/status_badge.dart';
@@ -25,7 +26,6 @@ class _RobotDetailAnalyticsScreenState
   bool loading = true;
   List robotLogs = [];
 
-  // Changed return type from void to Future<void>
   Future<void> fetchRobotLogs() async {
     setState(() => loading = true);
 
@@ -78,21 +78,18 @@ class _RobotDetailAnalyticsScreenState
     Color statusColor = _getStatusColor(status);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.background(context), // ✅ FIXED
       appBar: AppBar(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: AppTheme.surface(context), // ✅ FIXED
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary(context)), // ✅ FIXED
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          name,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: GradientText( // ✅ CHANGED to GradientText
+          text: name,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
       ),
       body: loading
@@ -100,7 +97,7 @@ class _RobotDetailAnalyticsScreenState
           : SafeArea(
               child: RefreshIndicator(
                 color: AppTheme.primary,
-                backgroundColor: AppTheme.surface,
+                backgroundColor: AppTheme.surface(context), // ✅ FIXED
                 onRefresh: fetchRobotLogs,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -158,16 +155,16 @@ class _RobotDetailAnalyticsScreenState
               children: [
                 Text(
                   robotId,
-                  style: const TextStyle(
+                  style: TextStyle( // ✅ FIXED
                     fontSize: 16,
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.textPrimary(context),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   model,
-                  style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                  style: TextStyle(fontSize: 14, color: AppTheme.textSecondary(context)), // ✅ FIXED
                 ),
                 const SizedBox(height: 8),
                 StatusBadge(status: status, customColor: statusColor),
@@ -233,15 +230,15 @@ class _RobotDetailAnalyticsScreenState
                 children: [
                   Text(
                     robotLogs.length.toString(),
-                    style: const TextStyle(
+                    style: TextStyle( // ✅ FIXED
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textPrimary(context),
                     ),
                   ),
-                  const Text(
+                  Text(
                     "Total Activities",
-                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary(context)), // ✅ FIXED
                   ),
                 ],
               ),
@@ -272,7 +269,7 @@ class _RobotDetailAnalyticsScreenState
                   drawVerticalLine: false,
                   horizontalInterval: 1,
                   getDrawingHorizontalLine: (value) {
-                    return FlLine(color: AppTheme.borderColor, strokeWidth: 1);
+                    return FlLine(color: AppTheme.borderColor(context), strokeWidth: 1); // ✅ FIXED
                   },
                 ),
                 titlesData: FlTitlesData(
@@ -291,8 +288,8 @@ class _RobotDetailAnalyticsScreenState
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
                               times[value.toInt()],
-                              style: const TextStyle(
-                                color: AppTheme.textTertiary,
+                              style: TextStyle( // ✅ FIXED
+                                color: AppTheme.textTertiary(context),
                                 fontSize: 11,
                               ),
                             ),
@@ -381,8 +378,8 @@ class _RobotDetailAnalyticsScreenState
                   children: [
                     Text(
                       message,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle( // ✅ FIXED
+                        color: AppTheme.textPrimary(context),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -390,7 +387,7 @@ class _RobotDetailAnalyticsScreenState
                     const SizedBox(height: 4),
                     Text(
                       "Status: $status • $timestamp",
-                      style: const TextStyle(color: AppTheme.textTertiary, fontSize: 12),
+                      style: TextStyle(color: AppTheme.textTertiary(context), fontSize: 12), // ✅ FIXED
                     ),
                   ],
                 ),
@@ -413,7 +410,7 @@ class _RobotDetailAnalyticsScreenState
       case "charging":
         return AppTheme.warning;
       default:
-        return AppTheme.textTertiary;
+        return AppTheme.textTertiary(context); // ✅ FIXED - Added context
     }
   }
 }
