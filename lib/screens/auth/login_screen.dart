@@ -63,17 +63,58 @@ class _LoginScreenState extends State<LoginScreen> {
         "password": password,
       });
 
+      print('🔍 API Response: $res');
+
       if (res["success"] == true && res["token"] != null) {
+        // Extract userId from multiple possible locations
+        String userId = "";
+        
+        // Try different possible locations for userId
+        if (res["userId"] != null && res["userId"].toString().isNotEmpty) {
+          userId = res["userId"].toString();
+        } else if (res["user"] != null && res["user"]["_id"] != null) {
+          userId = res["user"]["_id"].toString();
+        } else if (res["user"] != null && res["user"]["id"] != null) {
+          userId = res["user"]["id"].toString();
+        } else if (res["_id"] != null) {
+          userId = res["_id"].toString();
+        } else if (res["id"] != null) {
+          userId = res["id"].toString();
+        }
+
+        print('🔐 LOGIN SUCCESS');
+        print('📦 Extracted Data:');
+        print('  Token: ${res["token"].toString().substring(0, 20)}...');
+        print('  UserId: $userId');
+        print('  Email: $email');
+        print('  Name: ${res["name"] ?? res["user"]?["name"] ?? ""}');
+
+        if (userId.isEmpty) {
+          print('⚠️ WARNING: UserId is empty! Check API response structure.');
+          print('Full response: $res');
+        }
+
         await TokenStorage.saveUserData(
           token: res["token"],
-          userId: res["userId"] ?? res["user"]?["_id"] ?? "",
+          userId: userId,
           email: email,
           name: res["name"] ?? res["user"]?["name"] ?? "",
         );
 
+        // VERIFICATION: Check if data was actually saved
+        final savedToken = await TokenStorage.getToken();
+        final savedUserId = await TokenStorage.getUserId();
+        final savedEmail = await TokenStorage.getUserEmail();
+        final savedName = await TokenStorage.getUserName();
+        
+        print('✅ VERIFICATION AFTER SAVE:');
+        print('  Token: ${savedToken != null ? "EXISTS (${savedToken.length} chars)" : "NULL"}');
+        print('  UserId: $savedUserId');
+        print('  Email: $savedEmail');
+        print('  Name: $savedName');
+
         try {
-          final userId = res["userId"] ?? res["user"]?["_id"];
-          if (userId != null && userId.isNotEmpty) {
+          if (userId.isNotEmpty) {
             await ApiClient.sendFcmToken(
               token: res["token"],
               userId: userId,

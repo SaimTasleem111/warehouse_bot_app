@@ -10,7 +10,7 @@ import '../../widgets/status_badge.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/settings_bottom_sheet.dart';
-import '../auth/login_screen.dart';
+import '../../helperFunction/logout_helper.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -49,46 +49,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
-  Future<void> _handleLogout() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Logout", style: TextStyle(color: AppTheme.textPrimary(context), fontWeight: FontWeight.bold)),
-        content: Text("Are you sure you want to logout?", style: TextStyle(color: AppTheme.textSecondary(context))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel", style: TextStyle(color: AppTheme.textSecondary(context))),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text("Logout", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout == true) {
-      await TokenStorage.clearToken();
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-        (_) => false,
-      );
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -112,7 +72,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           IconButton(
             icon: const Icon(Icons.logout, color: AppTheme.error),
             tooltip: "Logout",
-            onPressed: _handleLogout,
+            onPressed: () => LogoutHelper.showLogoutDialog(context),
           ),
         ],
       ),

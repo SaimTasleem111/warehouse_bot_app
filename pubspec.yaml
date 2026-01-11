@@ -59,10 +59,21 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   mockito: ^5.6.1
   build_runner: ^2.10.4
+  flutter_launcher_icons: ^0.14.4
 
 dependency_overrides:
   webview_flutter_android: 4.10.11
   webview_flutter_wkwebview: 3.23.5
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/robot.png"
+  adaptive_icon_background: "#0A0E1A"
+  adaptive_icon_foreground: "assets/images/robot.png"
+  # Optional: Set min_sdk_android to 21 for better compatibility
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
